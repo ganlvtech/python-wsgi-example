@@ -7,4 +7,4 @@ class WSGIHandler(object):
 
 
 def get_wsgi_application():
-    return application
+    return WSGIHandler()

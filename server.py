@@ -1,8 +1,8 @@
 from wsgiref.simple_server import make_server
 
-from wsgi import get_wsgi_application
+from wsgi import WSGIHandler
 
-application = get_wsgi_application()
+application = WSGIHandler()
 
 httpd = make_server('', 8000, application)
 print('Serving HTTP on port 8000...')
