@@ -42,12 +42,6 @@ Copy `wsgi.py` to `django` site packages automatically.
 
 (Only used on Blue King platform)
 
-### settings.py
-
-If project start with django, it will copy `wsgi.py` hack and then let django die. `supervisord` will restart it.
-
-(Only used on Blue King platform. Even may not be used.)
-
 ## License
 
 The MIT License (MIT)
