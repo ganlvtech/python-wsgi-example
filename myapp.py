@@ -3,6 +3,8 @@ import os
 import pprint
 import time
 
+import wsgi_proxy
+
 
 def guess_type(path):
     content_type, encoding = mimetypes.guess_type(path)
@@ -48,6 +50,7 @@ def handle_home(environ, start_response):
         '/',
         '/environ',
         '/stream',
+        '/hello',
         '/manage.py',
         '/myapp.py',
         '/server.py',
@@ -109,4 +112,8 @@ def application(environ, start_response):
         return handle_stream(environ, start_response)
     if method == 'GET' and path == '/favicon.ico':
         return serve_file(environ, start_response, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/favicon.ico'))
+    if method == 'GET' and path == '/hello':
+        environ['HTTP_HOST'] = '127.0.0.1:8003'
+        environ['wsgi.url_scheme'] = 'http'
+        return wsgi_proxy.app(environ, start_response)
     return handle_file(environ, start_response)

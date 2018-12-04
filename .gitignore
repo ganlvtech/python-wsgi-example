@@ -1,1 +1,4 @@
 .svn
+*.pyc
+__pycache__
+/golang/go/bin
