@@ -46,13 +46,13 @@ def serve_file(environ, start_response, path):
 def handle_home(environ, start_response):
     links = (
         '/',
-        '/favicon.ico',
-        '/env',
+        '/environ',
         '/stream',
         '/manage.py',
         '/myapp.py',
         '/server.py',
         '/wsgi.py',
+        '/favicon.ico',
         '/static/favicon.ico',
         '/static/favicon.png',
     )
@@ -68,7 +68,7 @@ def handle_home(environ, start_response):
     return [content.encode()]
 
 
-def handle_env(environ, start_response):
+def handle_environ(environ, start_response):
     content = pprint.pformat(environ)
     start_response('200 OK', [
         ('Content-Type', 'text/plain'),
@@ -103,8 +103,8 @@ def application(environ, start_response):
     path = environ['PATH_INFO']
     if method == 'GET' and path == '/':
         return handle_home(environ, start_response)
-    if method == 'GET' and path == '/env':
-        return handle_env(environ, start_response)
+    if method == 'GET' and path == '/environ':
+        return handle_environ(environ, start_response)
     if method == 'GET' and path == '/stream':
         return handle_stream(environ, start_response)
     if method == 'GET' and path == '/favicon.ico':
