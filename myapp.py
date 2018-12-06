@@ -1,9 +1,19 @@
+import cgi
 import mimetypes
 import os
 import pprint
 import time
+import traceback
+import urlparse
 
 import wsgi_proxy
+
+
+def get_upload_dir():
+    path_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'USERRES')
+    if not os.path.exists(path_dir):
+        os.makedirs(path_dir, mode=0755)
+    return path_dir
 
 
 def guess_type(path):
@@ -51,6 +61,7 @@ def handle_home(environ, start_response):
         '/environ',
         '/stream',
         '/hello',
+        '/upload',
         '/manage.py',
         '/myapp.py',
         '/server.py',
@@ -101,6 +112,92 @@ def handle_file(environ, start_response):
     return serve_file(environ, start_response, path)
 
 
+def handle_upload_get(environ, start_response):
+    content = u'''
+<form method="post" enctype="multipart/form-data">
+    <p><input type="file" name="file"></p>
+    <p><button type="submit">Upload</button></p>
+</form>
+<ul>
+'''
+    for filename in os.listdir(get_upload_dir()):
+        content += u'''
+<li>
+    <a href="/USERRES/{}">{}</a>
+    <a href="/upload/delete?filename={}">Delete</a>
+</li>
+'''.format(filename, filename, filename)
+    content += u'</ul>'
+    content = content.encode()
+    start_response('200 OK', [
+        ('Content-Type', 'text/html; charset=UTF-8'),
+        ('Content-Length', str(len(content))),
+    ])
+    return [content]
+
+
+def handle_upload_post(environ, start_response):
+    try:
+        fields = cgi.FieldStorage(fp=environ['wsgi.input'], environ=environ)
+    except Exception as e:
+        traceback.print_exc()
+        content = e.message
+        content = content.encode()
+        start_response('500 Internal Server Error', [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(content))),
+        ])
+        return [content]
+
+    if 'file' not in fields:
+        content = u'No file provided.'
+        content = content.encode()
+        start_response('400 Bad Request', [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(content))),
+        ])
+        return [content]
+
+    file_item = fields['file']
+    if not isinstance(file_item, cgi.FieldStorage):
+        content = u'Field "file" is not a file or contains multiple files.'
+        content = content.encode()
+        start_response('400 Bad Request', [
+            ('Content-Type', 'text/plain; charset=UTF-8'),
+            ('Content-Length', str(len(content))),
+        ])
+        return [content]
+
+    path = os.path.join(get_upload_dir(), os.path.basename(file_item.filename))
+    with open(path, 'wb') as f:
+        f.write(file_item.file.read())
+
+    content = u'The file was uploaded successfully.'
+    content = content.encode()
+    start_response('200 OK', [
+        ('Content-Type', 'text/plain; charset=UTF-8'),
+        ('Content-Length', str(len(content))),
+    ])
+    return [content]
+
+
+def handle_upload_delete(environ, start_response):
+    query = urlparse.parse_qs(environ['QUERY_STRING'])
+    if 'filename' in query:
+        filename = query['filename'][0]
+        filename = os.path.basename(filename)
+        path = os.path.join(get_upload_dir(), filename)
+        os.unlink(path)
+
+    content = u'The file was deleted.'
+    content = content.encode()
+    start_response('200 OK', [
+        ('Content-Type', 'text/plain; charset=UTF-8'),
+        ('Content-Length', str(len(content))),
+    ])
+    return [content]
+
+
 def application(environ, start_response):
     method = environ['REQUEST_METHOD']
     path = environ['PATH_INFO']
@@ -112,6 +209,12 @@ def application(environ, start_response):
         return handle_stream(environ, start_response)
     if method == 'GET' and path == '/favicon.ico':
         return serve_file(environ, start_response, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/favicon.ico'))
+    if method == 'GET' and path == '/upload':
+        return handle_upload_get(environ, start_response)
+    if method == 'POST' and path == '/upload':
+        return handle_upload_post(environ, start_response)
+    if method == 'GET' and path == '/upload/delete':
+        return handle_upload_delete(environ, start_response)
     if method == 'GET' and path == '/hello':
         environ['HTTP_HOST'] = '127.0.0.1:8003'
         environ['wsgi.url_scheme'] = 'http'
