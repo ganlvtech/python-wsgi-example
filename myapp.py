@@ -187,7 +187,8 @@ def handle_upload_delete(environ, start_response):
         filename = query['filename'][0]
         filename = os.path.basename(filename)
         path = os.path.join(get_upload_dir(), filename)
-        os.unlink(path)
+        if os.path.exists(path) and os.path.isfile(path):
+            os.unlink(path)
 
     content = u'The file was deleted.'
     content = content.encode()
