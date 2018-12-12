@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+GO_SERVER_PORT = 8003
+
 
 def get_go_program_path():
     if os.name == 'nt':
@@ -14,6 +16,6 @@ def get_go_program_path():
 
 def run_go_server():
     path = get_go_program_path()
-    proc = subprocess.Popen([path], close_fds=True)
+    proc = subprocess.Popen([path, str(GO_SERVER_PORT)], close_fds=True)
     print("Go server running on PID {}".format(proc.pid))
     return proc

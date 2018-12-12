@@ -8,6 +8,8 @@ import urlparse
 
 import wsgi_proxy
 
+import golang
+
 
 def get_upload_dir():
     path_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'USERRES')
@@ -60,7 +62,7 @@ def handle_home(environ, start_response):
         '/',
         '/environ',
         '/stream',
-        '/hello',
+        '/go',
         '/upload',
         '/manage.py',
         '/myapp.py',
@@ -216,8 +218,8 @@ def application(environ, start_response):
         return handle_upload_post(environ, start_response)
     if method == 'GET' and path == '/upload/delete':
         return handle_upload_delete(environ, start_response)
-    if method == 'GET' and path == '/hello':
-        environ['HTTP_HOST'] = '127.0.0.1:8003'
+    if method == 'GET' and path == '/go':
+        environ['HTTP_HOST'] = '127.0.0.1:' + str(golang.GO_SERVER_PORT)
         environ['wsgi.url_scheme'] = 'http'
         return wsgi_proxy.app(environ, start_response)
     return handle_file(environ, start_response)

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 pushd $(dirname $0)
+mkdir bin/
 cd src/
 
 export GOOS=linux

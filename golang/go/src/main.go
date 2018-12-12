@@ -2,13 +2,12 @@ package main
 
 import (
 	"net/http"
+	"os"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("Hello, Gopher!"))
-}
-
 func main() {
-	http.HandleFunc("/hello", hello)
-	http.ListenAndServe(":8003", nil)
+	http.HandleFunc("/go", func(w http.ResponseWriter, req *http.Request) {
+		w.Write([]byte("Hello, Gopher!"))
+	})
+	http.ListenAndServe(":"+os.Args[1], nil)
 }
