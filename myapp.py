@@ -219,7 +219,7 @@ def application(environ, start_response):
     if method == 'GET' and path == '/upload/delete':
         return handle_upload_delete(environ, start_response)
     if method == 'GET' and path == '/go':
-        environ['HTTP_HOST'] = '127.0.0.1:' + str(golang.GO_SERVER_PORT)
+        environ['HTTP_HOST'] = '127.0.0.1:' + str(golang.get_go_port())
         environ['wsgi.url_scheme'] = 'http'
         return wsgi_proxy.app(environ, start_response)
     return handle_file(environ, start_response)

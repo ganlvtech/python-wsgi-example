@@ -1,7 +1,9 @@
 import os
 import subprocess
 
-GO_SERVER_PORT = 8003
+import portpicker
+
+GO_SERVER_PORT = None
 
 
 def get_go_program_path():
@@ -14,8 +16,15 @@ def get_go_program_path():
     return path
 
 
+def get_go_port():
+    global GO_SERVER_PORT
+    if not GO_SERVER_PORT:
+        GO_SERVER_PORT = portpicker.pick_unused_port()
+    return GO_SERVER_PORT
+
+
 def run_go_server():
     path = get_go_program_path()
-    proc = subprocess.Popen([path, str(GO_SERVER_PORT)], close_fds=True)
+    proc = subprocess.Popen([path, str(get_go_port())], close_fds=True)
     print("Go server running on PID {}".format(proc.pid))
     return proc
